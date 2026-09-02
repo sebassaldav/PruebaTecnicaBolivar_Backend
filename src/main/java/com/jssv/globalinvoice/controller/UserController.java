@@ -22,7 +22,7 @@ public class UserController {
         this.service = service;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('AUDITOR')")
     @GetMapping
     public ResponseEntity<WrapperResponse<Page<UserDTO>>> findAll(
             @RequestParam(value = "search", required = false) String search,
@@ -34,7 +34,7 @@ public class UserController {
         return new WrapperResponse<>(page, true, "success").createResponse(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<WrapperResponse<UserDTO>> findById(@PathVariable Integer id) {
         UserDTO dto = service.findById(id);
@@ -47,14 +47,14 @@ public class UserController {
         return new WrapperResponse<>(created, true, "success").createResponse(HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('AUDITOR')")
     @PutMapping("/{id}")
     public ResponseEntity<WrapperResponse<UserDTO>> update(@PathVariable Integer id, @Valid @RequestBody UserDTO obj) {
         UserDTO edited = service.update(id, obj);
         return new WrapperResponse<>(edited, true, "success").createResponse(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('AUDITOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<WrapperResponse<Void>> delete(@PathVariable Integer id) {
         service.delete(id);

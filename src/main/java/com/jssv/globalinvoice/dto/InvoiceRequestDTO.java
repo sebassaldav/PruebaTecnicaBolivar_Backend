@@ -11,10 +11,8 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @Builder
-public class InvoiceDTO {
+public class InvoiceRequestDTO {
 
-    private Integer id;
-    private String consecutive;
     private String customsCode;
     private InvoiceTypeEnum type;
     private BigDecimal subtotal;

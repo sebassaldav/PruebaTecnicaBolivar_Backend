@@ -27,6 +27,9 @@ public class Invoice {
     @Column(name = "consecutive", length = 10, nullable = false)
     private String consecutive;
 
+    @Column(name = "customs_code", length = 20)
+    private String customsCode;
+
     @Column(name = "type", length = 20,nullable = false)
     @Enumerated(EnumType.STRING)
     private InvoiceTypeEnum type;
@@ -44,8 +47,8 @@ public class Invoice {
     private BigDecimal total;
 
     @Column(name = "created_at", length = 20, nullable = false)
-    private LocalDate created_at;
+    private LocalDate createdAt;
 
     @Column(name = "created_by", length = 50, nullable = false)
-    private String created_by;
+    private String createdBy;
 }

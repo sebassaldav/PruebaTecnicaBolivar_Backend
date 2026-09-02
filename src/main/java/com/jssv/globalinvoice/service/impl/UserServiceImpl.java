@@ -9,6 +9,9 @@ import com.jssv.globalinvoice.mapper.UserMapper;
 import com.jssv.globalinvoice.repository.UserRepository;
 import com.jssv.globalinvoice.service.UserService;
 import com.jssv.globalinvoice.validator.UserValidator;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -19,18 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
-
-    public UserServiceImpl(UserMapper mapper, UserRepository repository, PasswordEncoder passwordEncoder) {
-        this.mapper = mapper;
-        this.repository = repository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Override
     @Transactional(readOnly = true)
