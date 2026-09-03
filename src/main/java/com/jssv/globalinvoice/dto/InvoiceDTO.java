@@ -21,6 +21,7 @@ public class InvoiceDTO {
     private BigDecimal iva;
     private BigDecimal withholding;
     private BigDecimal total;
+    private String totalInWords;
     private LocalDate createdAt;
     private String createdBy;
 }

@@ -33,7 +33,6 @@ public class InvoiceController {
         return new WrapperResponse<>(page, true, "success").createResponse(HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('OPERADOR')")
     @GetMapping("/{id}")
     public ResponseEntity<WrapperResponse<InvoiceDTO>> findById(@PathVariable Integer id) {
         InvoiceDTO dto = invoiceService.findById(id);

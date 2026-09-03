@@ -16,7 +16,7 @@ public class ErrorHandlerConfig extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> all(Exception e, WebRequest request){
-        WrapperResponse<?> response = new WrapperResponse<>(null, false, "Internal Server Error");
+        WrapperResponse<?> response = new WrapperResponse<>(null, false, e.getMessage() != null ? e.getMessage() : "Internal Server Error");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -34,7 +34,7 @@ public class ErrorHandlerConfig extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(GeneralException.class)
     public ResponseEntity<?> all(GeneralException e, WebRequest request){
-        WrapperResponse<?> response = new WrapperResponse<>(null, false, "Internal Server Error");
+        WrapperResponse<?> response = new WrapperResponse<>(null, false, e.getMessage() != null ? e.getMessage() : "Internal Server Error");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -9,6 +9,7 @@ import com.jssv.globalinvoice.mapper.InvoiceMapper;
 import com.jssv.globalinvoice.mapper.TotalFacturasMapper;
 import com.jssv.globalinvoice.repository.InvoiceRepository;
 import com.jssv.globalinvoice.service.InvoiceService;
+import com.jssv.globalinvoice.service.integration.NumberToWordsService;
 import com.jssv.globalinvoice.service.tax.InvoiceTaxStrategy;
 import com.jssv.globalinvoice.service.tax.TaxCalculationResult;
 import com.jssv.globalinvoice.service.tax.TaxStrategyFactory;
@@ -34,6 +35,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final TotalFacturasMapper totalFacturasMapper;
     private final InvoiceRepository invoiceRepository;
+    private final NumberToWordsService numberToWordsService;
 
 
     @Override
@@ -53,7 +55,7 @@ public class InvoiceServiceImpl implements InvoiceService {
             );
         }
 
-        return invoices.map(invoiceMapper::toDTO);
+        return invoices.map(this::toInvoiceDTO);
     }
 
     @Override
@@ -66,31 +68,12 @@ public class InvoiceServiceImpl implements InvoiceService {
                                 "No se encuentra la factura registrada con id: " + id
                         )
                 );
-        return invoiceMapper.toDTO(invoice);
+        return toInvoiceDTO(invoice);
     }
 
     @Override
     public InvoiceDTO create(InvoiceDTO obj) {
-
-        InvoiceTaxStrategy strategy =
-                taxStrategyFactory.getStrategy(obj.getType());
-
-        TaxCalculationResult calculation =
-                strategy.calculate(obj.getSubtotal());
-
-        Invoice invoice = invoiceMapper.toEntity(obj);
-
-        invoice.setConsecutive(getLastConsecutiveNumber());
-        invoice.setIva(calculation.getIva());
-        invoice.setWithholding(calculation.getWithholding());
-        invoice.setTotal(calculation.getTotal());
-        invoice.setCreatedAt(LocalDate.now(ZoneId.systemDefault()));
-        invoice.setCreatedBy(getAuthenticatedUserEmail());
-
-        Invoice savedInvoice =
-                invoiceRepository.save(invoice);
-
-        return invoiceMapper.toDTO(savedInvoice);
+        return null;
     }
 
     @Override
@@ -200,7 +183,17 @@ public class InvoiceServiceImpl implements InvoiceService {
         Invoice savedInvoice =
                 invoiceRepository.save(invoice);
 
-        return invoiceMapper.toDTO(savedInvoice);
+        InvoiceDTO response =
+                invoiceMapper.toDTO(savedInvoice);
+
+        String totalInWords =
+                numberToWordsService.convert(
+                        savedInvoice.getTotal()
+                );
+
+        response.setTotalInWords(totalInWords);
+
+        return response;
     }
 
     @Transactional
@@ -219,5 +212,20 @@ public class InvoiceServiceImpl implements InvoiceService {
         int lastConsecutiveNumber = invoiceRepository.getLastConsecutiveNumber();
 
         return String.format("FAC-%06d", lastConsecutiveNumber + 1);
+    }
+
+    private InvoiceDTO toInvoiceDTO(Invoice invoice) {
+
+        InvoiceDTO dto =
+                invoiceMapper.toDTO(invoice);
+
+        String totalInWords =
+                numberToWordsService.convert(
+                        invoice.getTotal()
+                );
+
+        dto.setTotalInWords(totalInWords);
+
+        return dto;
     }
 }
