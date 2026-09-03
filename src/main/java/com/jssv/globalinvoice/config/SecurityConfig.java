@@ -4,6 +4,7 @@ import com.jssv.globalinvoice.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -32,13 +33,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers("/api/dashboard/**").hasRole("AUDITOR")
                         .requestMatchers("/api/invoices/**").authenticated()
                         .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers("/api/test/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
