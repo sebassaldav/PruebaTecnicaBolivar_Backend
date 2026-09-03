@@ -1,6 +1,7 @@
 package com.jssv.globalinvoice.controller;
 
 import com.jssv.globalinvoice.dto.InvoiceDTO;
+import com.jssv.globalinvoice.dto.InvoiceRequestDTO;
 import com.jssv.globalinvoice.dto.UserDTO;
 import com.jssv.globalinvoice.dto.WrapperResponse;
 import com.jssv.globalinvoice.service.InvoiceService;
@@ -32,6 +33,7 @@ public class InvoiceController {
         return new WrapperResponse<>(page, true, "success").createResponse(HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('OPERADOR')")
     @GetMapping("/{id}")
     public ResponseEntity<WrapperResponse<InvoiceDTO>> findById(@PathVariable Integer id) {
         InvoiceDTO dto = invoiceService.findById(id);
@@ -40,8 +42,45 @@ public class InvoiceController {
 
     @PreAuthorize("hasRole('OPERADOR')")
     @PostMapping
-    public ResponseEntity<WrapperResponse<InvoiceDTO>> create(@Valid @RequestBody InvoiceDTO obj) {
+    public ResponseEntity<WrapperResponse<InvoiceDTO>> create(
+            @Valid @RequestBody InvoiceRequestDTO obj) {
+
         InvoiceDTO created = invoiceService.create(obj);
-        return new WrapperResponse<>(created, true, "success").createResponse(HttpStatus.CREATED);
+
+        return new WrapperResponse<>(
+                created,
+                true,
+                "success"
+        ).createResponse(HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasRole('OPERADOR')")
+    @PutMapping("/{id}")
+    public ResponseEntity<WrapperResponse<InvoiceDTO>> update(
+            @PathVariable Integer id,
+            @Valid @RequestBody InvoiceDTO obj) {
+
+        InvoiceDTO updated =
+                invoiceService.update(id, obj);
+
+        return new WrapperResponse<>(
+                updated,
+                true,
+                "success"
+        ).createResponse(HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasRole('OPERADOR')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<WrapperResponse<Void>> delete(
+            @PathVariable Integer id) {
+
+        invoiceService.delete(id);
+
+        return new WrapperResponse<Void>(
+                null,
+                true,
+                "Factura eliminada correctamente"
+        ).createResponse(HttpStatus.NO_CONTENT);
     }
 }

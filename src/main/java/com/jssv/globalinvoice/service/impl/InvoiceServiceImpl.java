@@ -1,6 +1,7 @@
 package com.jssv.globalinvoice.service.impl;
 
 import com.jssv.globalinvoice.dto.InvoiceDTO;
+import com.jssv.globalinvoice.dto.InvoiceRequestDTO;
 import com.jssv.globalinvoice.dto.TotalFacturasDTO;
 import com.jssv.globalinvoice.entity.Invoice;
 import com.jssv.globalinvoice.exception.NoDataFoundException;
@@ -37,10 +38,20 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<InvoiceDTO> findAll(Pageable pageable, String search) {
+    public Page<InvoiceDTO> findAll(
+            Pageable pageable,
+            String search) {
 
-        Page<Invoice> invoices =
-                invoiceRepository.findAll(pageable);
+        Page<Invoice> invoices;
+
+        if (search == null || search.isBlank()) {
+            invoices = invoiceRepository.findAll(pageable);
+        } else {
+            invoices = invoiceRepository.search(
+                    search.trim(),
+                    pageable
+            );
+        }
 
         return invoices.map(invoiceMapper::toDTO);
     }
@@ -84,11 +95,112 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceDTO update(Integer integer, InvoiceDTO obj) {
-        return null;
+            Invoice invoice =
+                    invoiceRepository.findById(integer)
+                            .orElseThrow(() ->
+                                    new NoDataFoundException(
+                                            "No se encuentra la factura registrada con id: "
+                                                    + integer
+                                    )
+                            );
+
+            InvoiceTaxStrategy strategy =
+                    taxStrategyFactory.getStrategy(
+                            obj.getType()
+                    );
+
+            TaxCalculationResult calculation =
+                    strategy.calculate(
+                            obj.getSubtotal()
+                    );
+
+            invoice.setCustomsCode(
+                    obj.getCustomsCode()
+            );
+
+            invoice.setType(
+                    obj.getType()
+            );
+
+            invoice.setSubtotal(
+                    obj.getSubtotal()
+            );
+
+            invoice.setIva(
+                    calculation.getIva()
+            );
+
+            invoice.setWithholding(
+                    calculation.getWithholding()
+            );
+
+            invoice.setTotal(
+                    calculation.getTotal()
+            );
+
+            Invoice updated =
+                    invoiceRepository.save(invoice);
+
+            return invoiceMapper.toDTO(updated);
+        }
+
+
+    @Override
+    public void delete(Integer id) {
+
+        if (!invoiceRepository.existsById(id)) {
+            throw new NoDataFoundException(
+                    "No se encuentra la factura registrada con id: "
+                            + id
+            );
+        }
+
+        invoiceRepository.deleteById(id);
     }
 
     @Override
-    public void delete(Integer integer) {
+    public InvoiceDTO create(InvoiceRequestDTO obj) {
+
+        InvoiceTaxStrategy strategy =
+                taxStrategyFactory.getStrategy(obj.getType());
+
+        TaxCalculationResult calculation =
+                strategy.calculate(obj.getSubtotal());
+
+        Invoice invoice = new Invoice();
+
+        invoice.setCustomsCode(obj.getCustomsCode());
+        invoice.setType(obj.getType());
+        invoice.setSubtotal(obj.getSubtotal());
+
+        invoice.setConsecutive(
+                getLastConsecutiveNumber()
+        );
+
+        invoice.setIva(
+                calculation.getIva()
+        );
+
+        invoice.setWithholding(
+                calculation.getWithholding()
+        );
+
+        invoice.setTotal(
+                calculation.getTotal()
+        );
+
+        invoice.setCreatedAt(
+                LocalDate.now(ZoneId.systemDefault())
+        );
+
+        invoice.setCreatedBy(
+                getAuthenticatedUserEmail()
+        );
+
+        Invoice savedInvoice =
+                invoiceRepository.save(invoice);
+
+        return invoiceMapper.toDTO(savedInvoice);
     }
 
     @Transactional
@@ -104,12 +216,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     private String getLastConsecutiveNumber(){
-
         int lastConsecutiveNumber = invoiceRepository.getLastConsecutiveNumber();
-
-        if (lastConsecutiveNumber < 0 || lastConsecutiveNumber == 0) {
-            lastConsecutiveNumber = 000001;
-        }
 
         return String.format("FAC-%06d", lastConsecutiveNumber + 1);
     }

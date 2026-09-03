@@ -24,7 +24,7 @@ import java.util.List;
 @RequestMapping("api/dashboard")
 public class DashboardController {
 
-    private final InvoiceServiceImpl invoiceService;
+    private final InvoiceService invoiceService;
 
     @PreAuthorize("hasRole('AUDITOR')")
     @GetMapping
